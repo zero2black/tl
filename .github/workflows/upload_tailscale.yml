@@ -29,18 +29,32 @@ jobs:
           mkdir tailscale_extract
           tar -xzf tailscale.tgz -C tailscale_extract
 
-      - name: Upload Specific Files to GitHub repository
+      - name: List extracted files for debugging
+        run: |
+          echo "Listing extracted files:"
+          ls -R tailscale_extract
+
+      - name: Move specific binaries to the root directory
+        run: |
+          mv tailscale_extract/tailscale_${{ env.version }}_amd64/tailscale .
+          mv tailscale_extract/tailscale_${{ env.version }}_amd64/tailscaled .
+
+      - name: List moved files for debugging
+        run: |
+          echo "Listing files in root directory:"
+          ls -la
+
+      - name: Add and commit files
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Move only the specific files to the repository
-          mv tailscale_extract/tailscale_${{ env.version }}_amd64/tailscale .
-          mv tailscale_extract/tailscale_${{ env.version }}_amd64/tailscaled .
-
-          # Add and commit the specific files
+          # Ensure the specific binaries are tracked
           git add tailscale tailscaled
+
+          # Commit the changes
           git commit -m "Add Tailscale binaries for version ${{ env.version }}"
 
-          # Push changes to the repository
+      - name: Push changes
+        run: |
           git push
