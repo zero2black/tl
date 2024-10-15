@@ -1,0 +1,45 @@
+name: Download and Upload Tailscale
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *' # Runs daily at midnight (adjust as needed)
+
+jobs:
+  download_and_upload:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Get latest Tailscale version
+        id: get_version
+        run: |
+          latest_version=$(wget -O- https://pkgs.tailscale.com/stable/ | grep tailscale_ | head -1 | cut -d'_' -f 2)
+          echo "Latest version: $latest_version"
+          echo "version=$latest_version" >> $GITHUB_ENV
+
+      - name: Download Tailscale tgz
+        run: |
+          wget https://pkgs.tailscale.com/stable/tailscale_${{ env.version }}_amd64.tgz -O tailscale.tgz
+
+      - name: Extract Tailscale tgz
+        run: |
+          mkdir tailscale_extract
+          tar -xzf tailscale.tgz -C tailscale_extract
+
+      - name: Upload to GitHub repository
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Move the extracted files to the repo (adjust path as needed)
+          mv tailscale_extract/* .
+
+          # Add and commit changes
+          git add .
+          git commit -m "Add Tailscale version ${{ env.version }}"
+
+          # Push changes to the repository
+          git push
