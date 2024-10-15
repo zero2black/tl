@@ -29,23 +29,27 @@ jobs:
           mkdir tailscale_extract
           tar -xzf tailscale.tgz -C tailscale_extract
 
-      - name: Delete existing Tailscale files
-        run: |
-          rm -f tailscale tailscaled
-          echo "Deleted existing tailscale and tailscaled files."
-
-      - name: Upload Specific Files to GitHub repository
+      - name: Delete existing files (if any)
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Move only the specific files to the repository
+          # Remove old files if they exist
+          rm -f tailscale tailscaled
+
+          # Commit the deletion of old files
+          git add tailscale tailscaled || true
+          git commit -m "Remove old Tailscale binaries for version ${{ env.version }}" || true
+
+      - name: Upload new Tailscale binaries to GitHub repository
+        run: |
+          # Move the specific files to the repository
           mv tailscale_extract/tailscale_${{ env.version }}_amd64/tailscale .
           mv tailscale_extract/tailscale_${{ env.version }}_amd64/tailscaled .
 
-          # Add and commit the specific files
+          # Add and commit the new files
           git add tailscale tailscaled
-          git commit -m "Add Tailscale binaries for version ${{ env.version }}"
+          git commit -m "Add new Tailscale binaries for version ${{ env.version }}"
 
           # Push changes to the repository
           git push
