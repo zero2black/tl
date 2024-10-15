@@ -1,4 +1,4 @@
-name: Download and Upload Tailscale
+name: Download and Upload Specific Tailscale Files
 
 on:
   workflow_dispatch:
@@ -29,17 +29,18 @@ jobs:
           mkdir tailscale_extract
           tar -xzf tailscale.tgz -C tailscale_extract
 
-      - name: Upload to GitHub repository
+      - name: Upload Specific Files to GitHub repository
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Move the extracted files to the repo (adjust path as needed)
-          mv tailscale_extract/* .
+          # Move only the specific files to the repository
+          mv tailscale_extract/tailscale_${{ env.version }}_amd64/tailscale .
+          mv tailscale_extract/tailscale_${{ env.version }}_amd64/tailscaled .
 
-          # Add and commit changes
-          git add .
-          git commit -m "Add Tailscale version ${{ env.version }}"
+          # Add and commit the specific files
+          git add tailscale tailscaled
+          git commit -m "Add Tailscale binaries for version ${{ env.version }}"
 
           # Push changes to the repository
           git push
