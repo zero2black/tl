@@ -1,9 +1,12 @@
 name: Download and Upload Specific Tailscale Files
 
 on:
+  push:
+    paths:
+      - version_tailscale  # Trigger when version_tailscale is modified
   workflow_dispatch:
-  schedule:
-    - cron: '0 0 * * *' # Runs daily at midnight (adjust as needed)
+#  schedule:
+#    - cron: '0 0 * * *' # Runs daily at midnight (adjust as needed)
 
 jobs:
   download_and_upload:
