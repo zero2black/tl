@@ -5,8 +5,9 @@ on:
     - cron: "0 * * * *" 
   push:
     paths:
-      - version_openclash
- #   branches:
+      - 'run_action/**'  # Trigger the workflow when files in this directory are modified
+      - 'version_openclash'
+ #   branches
  #     - main
   workflow_dispatch:  # Allows manual triggering of the workflow
 
