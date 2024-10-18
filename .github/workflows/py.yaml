@@ -2,10 +2,8 @@ name: Download python-telegram-bot
 
 on:
   schedule:
-    - cron: "0 * * * *" 
- 
- #   branches
- #     - main
+    - cron: "0 * * * *"  # Runs every hour
+
   workflow_dispatch:  # Allows manual triggering of the workflow
 
 permissions: 
@@ -37,15 +35,19 @@ jobs:
     - name: Install pip dependencies and save to root/pytelegrambotapi
       run: |
         python -m pip install --upgrade pip
-        mkdir -p root/pytelegrambotapi  # Ensure the directory exists
+        mkdir -p files/root/pytelegrambotapi  # Ensure the directory exists
         pip download python-telegram-bot -d files/root/pytelegrambotapi/
 
-    - name: Commit and push new downloaded files
+    - name: Zip the pytelegrambotapi directory
+      run: |
+        python -c "import shutil; shutil.make_archive('files/root/pytelegrambotapi', 'zip', 'files/root/pytelegrambotapi')"
+
+    - name: Commit and push new downloaded files and zip archive
       run: |
         git config --global user.name "GitHub Action"
         git config --global user.email "action@github.com"
-        git add files/root/pytelegrambotapi/
-        git commit -m "Download python-telegram-bot to files/root/pytelegrambotapi/"
+        git add files/root/pytelegrambotapi/ files/root/pytelegrambotapi.zip
+        git commit -m "Download and zip python-telegram-bot to files/root/pytelegrambotapi/"
         git push
       env:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
