@@ -1,0 +1,19 @@
+name: Dispatch Event on version_tailscale Change
+
+on:
+  push:
+    paths:
+      - 'version_tailscale'  # Trigger only when version_tailscale is changed
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Trigger workflow in zero2black/werte_oppicial
+      run: |
+        curl -X POST \
+          -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/zero2black/werte_oppicial/dispatches \
+          -d '{"event_type":"version_tailscale_changed"}'
