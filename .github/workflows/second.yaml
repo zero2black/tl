@@ -2,7 +2,7 @@ name: Run After OpenClash Version Update
 
 on:
   workflow_run:
-    workflows: ["Check and Update OpenClash Version"]
+    workflows: ["XxxxCheck and Update OpenClash Version"]
     types:
       - completed
 
