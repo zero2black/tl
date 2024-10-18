@@ -29,8 +29,10 @@ jobs:
       id: version_check
       run: |
         if [ "$LATEST_VERSION" != "$CURRENT_VERSION" ]; then
+          echo "Update needed"
           echo "::set-output name=update_needed::true"
         else
+          echo "No update needed"
           echo "::set-output name=update_needed::false"
         fi
 
@@ -45,3 +47,9 @@ jobs:
         git add version_openclash
         git commit -m "Update OpenClash version to $LATEST_VERSION"
         git push https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git
+
+    - name: Set output for workflow_run
+      id: workflow_run_output
+      run: |
+        echo "update_needed=${{ steps.version_check.outputs.update_needed }}" >> $GITHUB_ENV
+
