@@ -1,0 +1,49 @@
+name: Download python-telegram-bot
+
+on:
+  #push:
+ #   branches:
+ #     - main
+  workflow_dispatch:  # Allows manual triggering of the workflow
+
+permissions: 
+  contents: write  # Grant write permissions for pushing changes
+
+jobs:
+  download_packages:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'  # Specify the desired Python version
+
+    - name: Force remove files from the 'root/pytelegrambotapi' directory
+      run: |
+        git config --global user.name "GitHub Action"
+        git config --global user.email "action@github.com"
+        git rm -rf files/root/pytelegrambotapi/* || true  # Forcefully remove files in the directory if they exist
+        git commit -m "Remove old files from files/root/pytelegrambotapi directory"
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Install pip dependencies and save to root/pytelegrambotapi
+      run: |
+        python -m pip install --upgrade pip
+        mkdir -p root/pytelegrambotapi  # Ensure the directory exists
+        pip download python-telegram-bot -d files/root/pytelegrambotapi/
+
+    - name: Commit and push new downloaded files
+      run: |
+        git config --global user.name "GitHub Action"
+        git config --global user.email "action@github.com"
+        git add files/root/pytelegrambotapi/
+        git commit -m "Download python-telegram-bot to files/root/pytelegrambotapi/"
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
