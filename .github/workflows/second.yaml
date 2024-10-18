@@ -1,9 +1,10 @@
 name: Run After OpenClash Version Update
 
 on:
-  push:
-    paths:
-      - version_openclash # Trigger only when this file is changed.
+  workflow_run:
+    workflows: ["Check and Update OpenClash Version"]
+    types:
+      - completed
 
 jobs:
   run_secondary_task:
@@ -16,5 +17,4 @@ jobs:
     - name: Perform secondary action
       run: |
         echo "Running tasks after OpenClash version update"
-        # Add any secondary actions you need to run after version update
-        
+        # Add any secondary actions you need to run after the version update
