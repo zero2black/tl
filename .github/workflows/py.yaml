@@ -3,10 +3,7 @@ name: Download python-telegram-bot
 on:
   schedule:
     - cron: "0 * * * *" 
-  push:
-    paths:
-      - 'run_action/**'  # Trigger the workflow when files in this directory are modified
-      - 'version_openclash'
+ 
  #   branches
  #     - main
   workflow_dispatch:  # Allows manual triggering of the workflow
