@@ -48,7 +48,7 @@ jobs:
         git commit -m "Update OpenClash version to $LATEST_VERSION"
         git push https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git
     
-    - name: Update version in repo
+    - name: Update dispatch-event
       if: steps.version_check.outputs.update_needed == 'true'
       env:
         TOKEN: ${{ secrets.GH_TOKEN }}
