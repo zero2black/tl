@@ -71,20 +71,20 @@ jobs:
         if: env.UPDATE_NEEDED == 'true'
         run: |
           python -m pip install --upgrade pip
-          mkdir -p files/root/pytelegrambotapi  # Ensure the directory exists
-          pip download python-telegram-bot -d files/root/pytelegrambotapi/
+          mkdir -p files/pytelegrambotapi  # Ensure the directory exists
+          pip download python-telegram-bot -d files/pytelegrambotapi/
 
       - name: Zip the pytelegrambotapi directory
         if: env.UPDATE_NEEDED == 'true'
         run: |
-          python -c "import shutil; shutil.make_archive('files/root/pytelegrambotapi', 'zip', 'files/root/pytelegrambotapi')"
+          python -c "import shutil; shutil.make_archive('files/pytelegrambotapi', 'zip', 'files/pytelegrambotapi')"
 
       - name: Commit and push the zip archive
         if: env.UPDATE_NEEDED == 'true'
         run: |
           git config --global user.name "GitHub Action"
           git config --global user.email "action@github.com"
-          git add files/root/pytelegrambotapi.zip  # Only add the .zip file
+          git add files/pytelegrambotapi.zip  # Only add the .zip file
           git commit -m "Upload python-telegram-bot zip archive"
           git push
         env:
