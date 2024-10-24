@@ -1,4 +1,4 @@
-name: Get Latest Version
+name: Update versi File with Latest Version
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  get_version:
+  update_version:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -20,5 +20,20 @@ jobs:
           echo "Latest version is $latest_version"
           echo "::set-output name=version::$latest_version"
 
-      - name: Echo the version
+      - name: Update versi file
+        run: |
+          # Update the versi file with the new version
+          sed -i "s/^versi_python=.*/versi_python=${{ steps.get_release.outputs.version }}/" files/root/pytelegrambotapi/versi
+          
+          # Check if file has changed
+          if [[ $(git status --porcelain) ]]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add files/root/pytelegrambotapi/versi
+            git commit -m "Update versi file to version ${{ steps.get_release.outputs.version }}"
+            git push
+          else
+            echo "No changes detected in the versi file."
+
+      - name: Echo the latest version
         run: echo "The latest version is ${{ steps.get_release.outputs.version }}"
