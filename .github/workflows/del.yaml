@@ -2,7 +2,7 @@ name: Delete old workflow runs
 on:
   workflow_dispatch:  # Allows manual triggering of the workflow
   schedule:
-    - cron: "0 * * * *"  # This will run every hour. Adjust the schedule as needed.
+    - cron: "0 */6 * * *"  # This will run every hour. Adjust the schedule as needed.
 
 jobs:
   del_runs:
