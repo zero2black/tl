@@ -84,6 +84,11 @@ jobs:
           mkdir -p files/root/pytelegrambotapi  # Ensure the directory exists
           pip download python-telegram-bot -d files/root/pytelegrambotapi/
 
+      - name: Zip the pytelegrambotapi directory
+        if: env.UPDATE_NEEDED == 'true'
+        run: |
+          python -c "import shutil; shutil.make_archive('files/root/pytelegrambotapi', 'zip', 'files/root/pytelegrambotapi')"
+
       - name: Commit and push new downloaded files and zip archive
         if: env.UPDATE_NEEDED == 'true'
         run: |
