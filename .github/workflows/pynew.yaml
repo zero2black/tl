@@ -66,16 +66,7 @@ jobs:
         with:
           python-version: '3.x'  # Specify the desired Python version
 
-      - name: Force remove files from the 'root/pytelegrambotapi' directory
-        if: env.UPDATE_NEEDED == 'true'
-        run: |
-          git config --global user.name "GitHub Action"
-          git config --global user.email "action@github.com"
-          git rm -rf files/root/pytelegrambotapi/* || true  # Forcefully remove files in the directory if they exist
-          git commit -m "Remove old files from files/root/pytelegrambotapi directory"
-          git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+     
 
       - name: Install pip dependencies and save to root/pytelegrambotapi
         if: env.UPDATE_NEEDED == 'true'
