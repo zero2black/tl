@@ -18,17 +18,18 @@ jobs:
         run: |
           latest_version=$(curl -s https://api.github.com/repos/python-telegram-bot/python-telegram-bot/releases/latest | jq -r '.tag_name')
           echo "Latest version is $latest_version"
-          echo "::set-output name=version::$latest_version"
+          # Save the version to an environment file for use in the next steps
+          echo "LATEST_VERSION=$latest_version" >> $GITHUB_ENV
 
       - name: Update versi file
         run: |
           # Replace the versi_python line with the latest version
-          sed -i "s/^versi_python=.*/versi_python=${{ steps.get_release.outputs.version }}/" versi
+          sed -i "s/^versi_python=.*/versi_python=${LATEST_VERSION}/" versi
 
       - name: Commit changes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add versi
-          git commit -m "Update versi_python to ${{ steps.get_release.outputs.version }}"
+          git commit -m "Update versi_python to ${LATEST_VERSION}"
           git push
