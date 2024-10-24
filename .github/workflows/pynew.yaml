@@ -89,13 +89,13 @@ jobs:
         run: |
           python -c "import shutil; shutil.make_archive('files/root/pytelegrambotapi', 'zip', 'files/root/pytelegrambotapi')"
 
-      - name: Commit and push new downloaded files and zip archive
+      - name: Commit and push the zip archive
         if: env.UPDATE_NEEDED == 'true'
         run: |
           git config --global user.name "GitHub Action"
           git config --global user.email "action@github.com"
-          git add files/root/pytelegrambotapi/ files/root/pytelegrambotapi.zip
-          git commit -m "Download and zip python-telegram-bot to files/root/pytelegrambotapi/"
+          git add files/root/pytelegrambotapi.zip  # Only add the .zip file
+          git commit -m "Upload python-telegram-bot zip archive"
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
