@@ -1,4 +1,4 @@
-name: Update versi_python
+name: Update versi_python and Update python-telegram-bot
 
 on:
   push:
@@ -37,15 +37,12 @@ jobs:
       - name: Check if version needs updating
         run: |
           echo "Comparing versions..."
-          echo "LATEST_VERSION: $LATEST_VERSION"
-          echo "CURRENT_VERSION: $CURRENT_VERSION"
           if [ "$LATEST_VERSION" != "$CURRENT_VERSION" ]; then
             echo "Versions are different. Update needed."
             echo "UPDATE_NEEDED=true" >> $GITHUB_ENV
           else
             echo "Versions are the same. No update needed."
             echo "UPDATE_NEEDED=false" >> $GITHUB_ENV
-          fi
 
       - name: Update versi file if necessary
         if: env.UPDATE_NEEDED == 'true'
@@ -56,8 +53,43 @@ jobs:
       - name: Commit changes if version updated
         if: env.UPDATE_NEEDED == 'true'
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
           git add versi
           git commit -m "Update versi_python to ${LATEST_VERSION}"
           git push
+
+      - name: Set up Python
+        if: env.UPDATE_NEEDED == 'true'
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'  # Specify the desired Python version
+
+      - name: Force remove files from the 'root/pytelegrambotapi' directory
+        if: env.UPDATE_NEEDED == 'true'
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
+          git rm -rf files/root/pytelegrambotapi/* || true  # Forcefully remove files in the directory if they exist
+          git commit -m "Remove old files from files/root/pytelegrambotapi directory"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install pip dependencies and save to root/pytelegrambotapi
+        if: env.UPDATE_NEEDED == 'true'
+        run: |
+          python -m pip install --upgrade pip
+          mkdir -p files/root/pytelegrambotapi  # Ensure the directory exists
+          pip download python-telegram-bot -d files/root/pytelegrambotapi/
+
+      - name: Commit and push new downloaded files and zip archive
+        if: env.UPDATE_NEEDED == 'true'
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
+          git add files/root/pytelegrambotapi/ files/root/pytelegrambotapi.zip
+          git commit -m "Download and zip python-telegram-bot to files/root/pytelegrambotapi/"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
