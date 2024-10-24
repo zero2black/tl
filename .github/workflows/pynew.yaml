@@ -1,0 +1,24 @@
+name: Get Latest Version
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  get_version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Get latest release version
+        id: get_release
+        run: |
+          latest_version=$(curl -s https://api.github.com/repos/python-telegram-bot/python-telegram-bot/releases/latest | jq -r '.tag_name')
+          echo "Latest version is $latest_version"
+          echo "::set-output name=version::$latest_version"
+
+      - name: Echo the version
+        run: echo "The latest version is ${{ steps.get_release.outputs.version }}"
