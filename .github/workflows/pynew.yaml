@@ -59,4 +59,10 @@ jobs:
           git commit -m "Update versi_python to ${LATEST_VERSION}"
           git push
 
-    
+      - name: Send Telegram notification if update found
+        if: env.UPDATE_NEEDED == 'true'
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.BOT_TOKEN }}/sendMessage" \
+          -d chat_id="${{ secrets.CHAT_ID }}" \
+          -d text="Updated versi_python to ${LATEST_VERSION}" \
+          -d message_thread_id="${{ secrets.THREAD_UPDATE_ID }}"
