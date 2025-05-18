@@ -1,8 +1,8 @@
 name: Check, Update, and Upload Tailscale Binaries
 
 on:
-  schedule:
-    - cron: "0 * * * *"  # This will run every hour. Adjust the schedule as needed.
+  #schedule:
+  #  - cron: "0 * * * *"  # This will run every hour. Adjust the schedule as needed.
   workflow_dispatch: # Allows manual triggering of the workflow.
 
 jobs:
