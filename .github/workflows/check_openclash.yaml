@@ -15,42 +15,48 @@ jobs:
       - name: Get latest release version of python-telegram-bot
         id: get_release
         run: |
-          latest_version=$(curl -s https://api.github.com/repos/python-telegram-bot/python-telegram-bot/releases/latest | jq -r '.tag_name')
+          max_retries=5
+          attempt=1
+          latest_version=""
+          while [ -z "$latest_version" ] && [ $attempt -le $max_retries ]; do
+            echo "Attempt $attempt to fetch latest version..."
+            latest_version=$(curl -s https://api.github.com/repos/python-telegram-bot/python-telegram-bot/releases/latest | jq -r '.tag_name')
+            if [ -z "$latest_version" ]; then
+              echo "No version found. Retrying in 10 seconds..."
+              sleep 10
+            fi
+            attempt=$((attempt + 1))
+          done
+
+          if [ -z "$latest_version" ]; then
+            echo "Failed to fetch latest version after $max_retries attempts."
+            exit 1
+          fi
+
           echo "Latest python-telegram-bot version is $latest_version"
-          # Save the version to an environment file
           echo "LATEST_PYTHON_VERSION=$latest_version" >> $GITHUB_ENV
 
       - name: Read current versi_python from versi file
         id: read_versi
         run: |
-          # Extract the current versi_python value from the versi file
           current_version=$(grep -oP '^versi_python=\K.*' versi)
           echo "Current versi_python is $current_version"
           echo "CURRENT_PYTHON_VERSION=$current_version" >> $GITHUB_ENV
 
-      - name: Debug environment variables
-        run: |
-          echo "LATEST_PYTHON_VERSION=${{ env.LATEST_PYTHON_VERSION }}"
-          echo "CURRENT_PYTHON_VERSION=${{ env.CURRENT_PYTHON_VERSION }}"
-
       - name: Check if python-telegram-bot version needs updating
         run: |
-          echo "Comparing python-telegram-bot versions..."
           if [ "$LATEST_PYTHON_VERSION" != "$CURRENT_PYTHON_VERSION" ]; then
-            echo "Versions are different. Update needed."
             echo "UPDATE_PYTHON_NEEDED=true" >> $GITHUB_ENV
           else
-            echo "Versions are the same. No update needed."
             echo "UPDATE_PYTHON_NEEDED=false" >> $GITHUB_ENV
           fi
 
-      - name: Update versi file for python-telegram-bot if necessary
+      - name: Update versi file for python-telegram-bot
         if: env.UPDATE_PYTHON_NEEDED == 'true'
         run: |
-          # Replace the versi_python line with the latest version
           sed -i "s/^versi_python=.*/versi_python=${LATEST_PYTHON_VERSION}/" versi
 
-      - name: Commit changes if python-telegram-bot version updated
+      - name: Commit changes for python-telegram-bot
         if: env.UPDATE_PYTHON_NEEDED == 'true'
         run: |
           git config --global user.name "GitHub Action"
@@ -59,7 +65,7 @@ jobs:
           git commit -m "Update versi_python to ${LATEST_PYTHON_VERSION}"
           git push
 
-      - name: Send Telegram notification if python-telegram-bot update found
+      - name: Notify Telegram for python-telegram-bot update
         if: env.UPDATE_PYTHON_NEEDED == 'true'
         run: |
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.BOT_TOKEN }}/sendMessage" \
@@ -70,36 +76,47 @@ jobs:
       - name: Get latest OpenClash version
         id: get_openclash_version
         run: |
-          latest_ver=$(curl -s https://raw.githubusercontent.com/vernesong/OpenClash/package/dev/version | head -n1 | sed "s/^v//g")
-          echo "Latest OpenClash version is $latest_ver"
+          max_retries=5
+          attempt=1
+          latest_ver=""
+          while [ -z "$latest_ver" ] && [ $attempt -le $max_retries ]; do
+            echo "Attempt $attempt to fetch OpenClash version..."
+            latest_ver=$(curl -s https://raw.githubusercontent.com/vernesong/OpenClash/package/dev/version | head -n1 | sed "s/^v//g")
+            if [ -z "$latest_ver" ]; then
+              echo "No version found. Retrying in 10 seconds..."
+              sleep 10
+            fi
+            attempt=$((attempt + 1))
+          done
+
+          if [ -z "$latest_ver" ]; then
+            echo "Failed to fetch OpenClash version after $max_retries attempts."
+            exit 1
+          fi
+
           echo "LATEST_OPENCLASH_VERSION=$latest_ver" >> $GITHUB_ENV
 
       - name: Read current versi_openclash from versi file
         id: read_openclash
         run: |
-          # Extract the current versi_openclash value from the versi file
           current_openclash_version=$(grep -oP '^versi_openclash=\K.*' versi)
           echo "Current versi_openclash is $current_openclash_version"
           echo "CURRENT_OPENCLASH_VERSION=$current_openclash_version" >> $GITHUB_ENV
 
       - name: Check if OpenClash version needs updating
         run: |
-          echo "Comparing OpenClash versions..."
           if [ "$LATEST_OPENCLASH_VERSION" != "$CURRENT_OPENCLASH_VERSION" ]; then
-            echo "Versions are different. Update needed."
             echo "UPDATE_OPENCLASH_NEEDED=true" >> $GITHUB_ENV
           else
-            echo "Versions are the same. No update needed."
             echo "UPDATE_OPENCLASH_NEEDED=false" >> $GITHUB_ENV
           fi
 
-      - name: Update versi file for OpenClash if necessary
+      - name: Update versi file for OpenClash
         if: env.UPDATE_OPENCLASH_NEEDED == 'true'
         run: |
-          # Replace the versi_openclash line with the latest version
           sed -i "s/^versi_openclash=.*/versi_openclash=${LATEST_OPENCLASH_VERSION}/" versi
 
-      - name: Commit changes if OpenClash version updated
+      - name: Commit changes for OpenClash
         if: env.UPDATE_OPENCLASH_NEEDED == 'true'
         run: |
           git config --global user.name "GitHub Action"
@@ -108,7 +125,7 @@ jobs:
           git commit -m "Update versi_openclash to ${LATEST_OPENCLASH_VERSION}"
           git push
 
-      - name: Send Telegram notification if OpenClash update found
+      - name: Notify Telegram for OpenClash update
         if: env.UPDATE_OPENCLASH_NEEDED == 'true'
         run: |
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.BOT_TOKEN }}/sendMessage" \
