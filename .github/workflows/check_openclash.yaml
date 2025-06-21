@@ -21,8 +21,9 @@ jobs:
           while [ -z "$latest_version" ] && [ $attempt -le $max_retries ]; do
             echo "Attempt $attempt to fetch latest version..."
             latest_version=$(curl -s https://api.github.com/repos/python-telegram-bot/python-telegram-bot/releases/latest | jq -r '.tag_name')
-            if [ -z "$latest_version" ]; then
+            if [ -z "$latest_version" ] || [ "$latest_version" == "null" ]; then
               echo "No version found. Retrying in 10 seconds..."
+              latest_version=""
               sleep 10
             fi
             attempt=$((attempt + 1))
@@ -30,13 +31,15 @@ jobs:
 
           if [ -z "$latest_version" ]; then
             echo "Failed to fetch latest version after $max_retries attempts."
-            exit 1
+            echo "SKIP_PYTHON_UPDATE=true" >> $GITHUB_ENV
+            exit 0
           fi
 
           echo "Latest python-telegram-bot version is $latest_version"
           echo "LATEST_PYTHON_VERSION=$latest_version" >> $GITHUB_ENV
 
       - name: Read current versi_python from versi file
+        if: env.SKIP_PYTHON_UPDATE != 'true'
         id: read_versi
         run: |
           current_version=$(grep -oP '^versi_python=\K.*' versi)
@@ -44,6 +47,7 @@ jobs:
           echo "CURRENT_PYTHON_VERSION=$current_version" >> $GITHUB_ENV
 
       - name: Check if python-telegram-bot version needs updating
+        if: env.SKIP_PYTHON_UPDATE != 'true'
         run: |
           if [ "$LATEST_PYTHON_VERSION" != "$CURRENT_PYTHON_VERSION" ]; then
             echo "UPDATE_PYTHON_NEEDED=true" >> $GITHUB_ENV
@@ -52,12 +56,12 @@ jobs:
           fi
 
       - name: Update versi file for python-telegram-bot
-        if: env.UPDATE_PYTHON_NEEDED == 'true'
+        if: env.UPDATE_PYTHON_NEEDED == 'true' && env.SKIP_PYTHON_UPDATE != 'true'
         run: |
           sed -i "s/^versi_python=.*/versi_python=${LATEST_PYTHON_VERSION}/" versi
 
       - name: Commit changes for python-telegram-bot
-        if: env.UPDATE_PYTHON_NEEDED == 'true'
+        if: env.UPDATE_PYTHON_NEEDED == 'true' && env.SKIP_PYTHON_UPDATE != 'true'
         run: |
           git config --global user.name "GitHub Action"
           git config --global user.email "action@github.com"
@@ -66,7 +70,7 @@ jobs:
           git push
 
       - name: Notify Telegram for python-telegram-bot update
-        if: env.UPDATE_PYTHON_NEEDED == 'true'
+        if: env.UPDATE_PYTHON_NEEDED == 'true' && env.SKIP_PYTHON_UPDATE != 'true'
         run: |
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.BOT_TOKEN }}/sendMessage" \
           -d chat_id="${{ secrets.CHAT_ID }}" \
@@ -132,3 +136,4 @@ jobs:
           -d chat_id="${{ secrets.CHAT_ID }}" \
           -d text="Updated versi_openclash to ${LATEST_OPENCLASH_VERSION}" \
           -d message_thread_id="${{ secrets.THREAD_UPDATE_ID }}"
+          
